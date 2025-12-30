@@ -247,6 +247,11 @@ def get_venv_pip() -> str:
     return str(Path(config.VENV_DIR) / "bin" / "pip")
 
 
+def get_venv_site_packages() -> str:
+    """Get path to site-packages directory in venv."""
+    return str(Path(config.VENV_DIR) / "lib" / "python3.12" / "site-packages")
+
+
 def get_venvHF() -> str:
     """Get path to HF CLI executable in venv."""
     return str(Path(config.VENV_DIR) / "bin" / "hf")
@@ -316,13 +321,14 @@ def install_other_dependencies() -> bool:
     dependencies = [
         "ffmpeg-python>=0.2.0",
         "boto3>=1.34.0",
+        "requests>=2.31.0",  # Required for S3 pre-signed URL downloads
     ]
 
     cmd = [get_venv_pip(), "install", *dependencies]
 
     return run_command(
         cmd,
-        description="Install ffmpeg-python and boto3",
+        description="Install ffmpeg-python, boto3, and requests",
         env={"PIP_NO_CACHE_DIR": "1"}
     )
 
