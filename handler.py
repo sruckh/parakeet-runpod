@@ -272,6 +272,11 @@ def handler(event: dict[str, Any] | str) -> dict[str, Any]:
         logger.info("=" * 60)
         logger.info("Handler invoked")
 
+        # Setup Python path to access venv packages FIRST
+        # This must happen before any imports from the venv (ffmpeg, boto3, etc.)
+        setup_python_path()
+        setup_huggingface_cache()
+
         # Parse input
         if isinstance(event, str):
             try:
