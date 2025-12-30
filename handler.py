@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import traceback
@@ -372,7 +373,8 @@ def main():
 
     This function:
     1. Runs bootstrap if needed (first run only)
-    2. Starts the RunPod serverless worker
+    2. Applies dependency patches if needed
+    3. Starts the RunPod serverless worker
     """
     logger.info("=" * 60)
     logger.info("Parakeet RunPod Serverless Starting")
@@ -389,6 +391,26 @@ def main():
     if not bootstrap_if_needed():
         logger.error("Bootstrap failed - cannot start server")
         sys.exit(1)
+
+    # ONE-TIME PATCH: Install missing dependencies (requests, cuda-python)
+    # This can be removed once the patch completes successfully
+    patch_script = Path(__file__).parent / "patch_dependencies.py"
+    if patch_script.exists():
+        logger.info("Running dependency patch...")
+        try:
+            result = subprocess.run(
+                [get_venv_python(), str(patch_script)],
+                capture_output=True,
+                text=True,
+                timeout=600
+            )
+            if result.returncode == 0:
+                logger.info("Patch completed successfully")
+                logger.info(result.stdout)
+            else:
+                logger.warning(f"Patch failed (continuing anyway): {result.stderr}")
+        except Exception as e:
+            logger.warning(f"Could not run patch (continuing anyway): {e}")
 
     logger.info("Starting RunPod serverless handler...")
 
