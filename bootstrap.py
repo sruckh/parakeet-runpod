@@ -8,14 +8,13 @@ if the marker file exists.
 
 Installation includes:
 - Python virtual environment creation
-- PyTorch with CUDA 12.8 support
-- Flash Attention
-- NVIDIA NeMo toolkit with ASR support
+- NVIDIA NeMo toolkit with ASR support (auto-installs PyTorch, Flash Attention, etc.)
 - Hugging Face Hub CLI
-- Additional dependencies (ffmpeg-python, boto3)
+- Additional dependencies (ffmpeg-python, boto3, requests)
 - Parakeet model download
 
 The bootstrap process only runs once when the volume is first attached.
+NeMo handles all ML framework dependencies automatically.
 """
 
 from __future__ import annotations
@@ -193,8 +192,7 @@ def mark_installation_complete() -> bool:
             "status": "complete",
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "model": config.MODEL_NAME,
-            "pytorch_version": "2.8.0",
-            "flash_attn_version": config.FLASH_ATTN_VERSION,
+            "nemo_managed_dependencies": True,
         }
         marker.write_text(json.dumps(data, indent=2))
         log_success(f"Created installation marker: {marker}")
@@ -249,7 +247,7 @@ def get_venv_pip() -> str:
 
 def get_venv_site_packages() -> str:
     """Get path to site-packages directory in venv."""
-    return str(Path(config.VENV_DIR) / "lib" / "python3.12" / "site-packages")
+    return str(Path(config.VENV_DIR) / "lib" / "python3.11" / "site-packages")
 
 
 def get_venvHF() -> str:
@@ -257,46 +255,16 @@ def get_venvHF() -> str:
     return str(Path(config.VENV_DIR) / "bin" / "hf")
 
 
-def install_pytorch() -> bool:
-    """Install PyTorch with CUDA 12.8 support."""
-    log_info("Installing PyTorch 2.8.0 with CUDA 12.8 support...")
-
-    packages = config.PYTORCH_VERSION.split()
-    cmd = [
-        get_venv_pip(), "install",
-        *packages,
-        "--index-url", config.PYTORCH_INDEX_URL
-    ]
-
-    return run_command(
-        cmd,
-        description=f"Install PyTorch with CUDA 12.8",
-        env={"PIP_NO_CACHE_DIR": "1"}
-    )
-
-
-def install_flash_attn() -> bool:
-    """Install flash-attention from wheel."""
-    log_info("Installing flash-attention 2.8.1...")
-
-    cmd = [get_venv_pip(), "install", config.FLASH_ATTN_WHEEL]
-
-    return run_command(
-        cmd,
-        description=f"Install flash-attn from wheel",
-        env={"PIP_NO_CACHE_DIR": "1"}
-    )
-
-
 def install_nemo() -> bool:
-    """Install NVIDIA NeMo toolkit with ASR support."""
+    """Install NVIDIA NeMo toolkit with ASR support (handles PyTorch dependencies)."""
     log_info("Installing NVIDIA NeMo toolkit with ASR support...")
+    log_info("NeMo will automatically install PyTorch and other ML dependencies")
 
-    cmd = [get_venv_pip(), "install", "nemo-toolkit[asr]"]
+    cmd = [get_venv_pip(), "install", "-U", "nemo-toolkit[asr]"]
 
     return run_command(
         cmd,
-        description="Install NeMo toolkit",
+        description="Install NeMo toolkit with auto dependencies",
         env={"PIP_NO_CACHE_DIR": "1"}
     )
 
@@ -401,9 +369,8 @@ def install_all() -> bool:
     steps: list[tuple[str, Callable[[], bool]]] = [
         ("Creating directories", create_directories),
         ("Creating virtual environment", create_virtual_environment),
-        ("Installing PyTorch", install_pytorch),
-        ("Installing flash-attention", install_flash_attn),
-        ("Installing NeMo toolkit", install_nemo),
+        # Let NeMo handle PyTorch and Flash Attention installation
+        ("Installing NeMo toolkit (with PyTorch)", install_nemo),
         ("Installing Hugging Face Hub", install_huggingface_hub),
         ("Installing additional dependencies", install_other_dependencies),
         ("Downloading Parakeet model", download_model),

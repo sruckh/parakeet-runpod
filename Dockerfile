@@ -7,7 +7,7 @@
 # =============================================================================
 
 # Base image: NVIDIA CUDA with cuDNN
-FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 
 # Metadata
 LABEL maintainer="Parakeet Serverless Team"
@@ -29,9 +29,12 @@ WORKDIR /app
 # ---------------------------------------------------------------------------
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.12 \
-    python3.12-venv \
-    python3.12-dev \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
     python3-pip \
     git \
     ca-certificates \
@@ -43,7 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
-    && ln -sf /usr/bin/python3.12 /usr/local/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/local/bin/python \
     && ln -sf /usr/bin/pip3 /usr/local/bin/pip
 
 # Verify Python installation
