@@ -247,11 +247,13 @@ def handler(event: dict[str, Any] | str) -> dict[str, Any]:
 
     This function is called by RunPod for each request.
 
-    Input JSON format:
+    Input JSON format (as sent by RunPod):
     {
-        "audio_base64": "<base64 encoded audio>",  // OR
-        "audio_url": "<s3 presigned url>",
-        "timestamp": false  // optional, default false
+        "input": {
+            "audio_base64": "<base64 encoded audio>",  // OR
+            "audio_url": "<s3 presigned url>",
+            "timestamp": false  // optional, default false
+        }
     }
 
     Output JSON format:
@@ -273,14 +275,23 @@ def handler(event: dict[str, Any] | str) -> dict[str, Any]:
         # Parse input
         if isinstance(event, str):
             try:
-                data = json.loads(event)
+                event = json.loads(event)
             except json.JSONDecodeError as e:
                 return {
                     "error": f"Invalid JSON input: {e}",
                     "success": False
                 }
+
+        # RunPod wraps user input in an "input" field
+        # Extract the actual input data
+        if isinstance(event, dict) and "input" in event:
+            data = event["input"]
+            logger.info("Extracted input from RunPod event wrapper")
         else:
             data = event
+            logger.info("Using event directly as input")
+
+        logger.debug(f"Input data keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
 
         # Validate and get input type
         try:
