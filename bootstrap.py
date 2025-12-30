@@ -322,13 +322,14 @@ def install_other_dependencies() -> bool:
         "ffmpeg-python>=0.2.0",
         "boto3>=1.34.0",
         "requests>=2.31.0",  # Required for S3 pre-signed URL downloads
+        "cuda-python>=12.3",  # Required for NeMo CUDA graphs support
     ]
 
     cmd = [get_venv_pip(), "install", *dependencies]
 
     return run_command(
         cmd,
-        description="Install ffmpeg-python, boto3, and requests",
+        description="Install ffmpeg-python, boto3, requests, and cuda-python",
         env={"PIP_NO_CACHE_DIR": "1"}
     )
 
