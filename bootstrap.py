@@ -36,23 +36,57 @@ import config
 # Logging
 # =============================================================================
 
+# Log file for debugging (written to volume so it can be inspected)
+_log_file = None
+
+
+def _get_log_file():
+    """Get or create the log file handle."""
+    global _log_file
+    if _log_file is None:
+        try:
+            log_path = Path(config.PARAKEET_DIR) / "bootstrap.log"
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            _log_file = open(log_path, "a", buffering=1)  # Line buffered
+        except Exception:
+            pass  # If we can't create log file, just continue
+    return _log_file
+
 
 def log_info(message: str) -> None:
     """Log an info message."""
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] [BOOTSTRAP] {message}", flush=True)
+    msg = f"[{timestamp}] [BOOTSTRAP] {message}"
+    print(msg, flush=True)
+
+    # Also write to file
+    logfile = _get_log_file()
+    if logfile:
+        logfile.write(msg + "\n")
 
 
 def log_error(message: str) -> None:
     """Log an error message."""
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] [BOOTSTRAP] ERROR: {message}", flush=True, file=sys.stderr)
+    msg = f"[{timestamp}] [BOOTSTRAP] ERROR: {message}"
+    print(msg, flush=True, file=sys.stderr)
+
+    # Also write to file
+    logfile = _get_log_file()
+    if logfile:
+        logfile.write(msg + "\n")
 
 
 def log_success(message: str) -> None:
     """Log a success message."""
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] [BOOTSTRAP] SUCCESS: {message}", flush=True)
+    msg = f"[{timestamp}] [BOOTSTRAP] SUCCESS: {message}"
+    print(msg, flush=True)
+
+    # Also write to file
+    logfile = _get_log_file()
+    if logfile:
+        logfile.write(msg + "\n")
 
 
 # =============================================================================
@@ -110,12 +144,18 @@ def run_command(
             # Log stdout but limit verbosity
             lines = result.stdout.strip().split("\n")
             if len(lines) > 20:
-                log_info(f"STDOUT (showing first/last 10 lines of {len(lines)}):")
+                log_info(f"STDOUT (showing first/last 5 lines of {len(lines)} in console, full output in log):")
                 for line in lines[:5]:
                     print(f"  {line}")
                 print("  ...")
                 for line in lines[-5:]:
                     print(f"  {line}")
+                # Write full output to log file only
+                logfile = _get_log_file()
+                if logfile:
+                    logfile.write("  FULL STDOUT:\n")
+                    for line in lines:
+                        logfile.write(f"  {line}\n")
             else:
                 log_info(f"STDOUT: {result.stdout}")
 
@@ -229,7 +269,7 @@ def create_directories() -> bool:
 
 def create_virtual_environment() -> bool:
     """Create Python virtual environment."""
-    log_info("Creating Python 3.12 virtual environment...")
+    log_info("Creating Python 3.11 virtual environment...")
 
     cmd = [sys.executable, "-m", "venv", config.VENV_DIR]
     return run_command(cmd, description="Create virtual environment")
