@@ -25,7 +25,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 WORKDIR /app
 
 # ---------------------------------------------------------------------------
-# Install Python 3.12 and Essential System Packages
+# Install Python 3.11 and Essential System Packages
 # ---------------------------------------------------------------------------
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -46,11 +46,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
     && ln -sf /usr/bin/python3.11 /usr/local/bin/python \
     && ln -sf /usr/bin/pip3 /usr/local/bin/pip
 
 # Verify Python installation
-RUN python --version && pip --version
+RUN python --version && python3 --version && pip --version
 
 # ---------------------------------------------------------------------------
 # Install RunPod Serverless SDK
