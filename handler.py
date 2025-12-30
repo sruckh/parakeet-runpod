@@ -148,6 +148,13 @@ def load_model():
         )
         logger.info("Model loaded successfully")
 
+        # Disable CUDA graphs to avoid CUDA error 35
+        try:
+            _asr_model.decoding.decoding.decoding_computer.disable_cuda_graphs()
+            logger.info("CUDA graphs disabled successfully")
+        except Exception as e:
+            logger.warning(f"Could not disable CUDA graphs: {e}")
+
         return _asr_model
 
     except Exception as e:
