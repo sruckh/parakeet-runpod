@@ -117,7 +117,7 @@ curl -X POST https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/runsync \
 {
   "input": {
     "audio_base64": "UklGRiQAAABXQVZFZm10...",
-    "timestamp": false
+    "timestamps": false
   }
 }
 ```
@@ -128,7 +128,7 @@ curl -X POST https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/runsync \
 {
   "input": {
     "audio_url": "https://s3.amazonaws.com/bucket/audio.mp3?presigned=...",
-    "timestamp": false
+    "timestamps": false
   }
 }
 ```
@@ -139,10 +139,12 @@ curl -X POST https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/runsync \
 {
   "input": {
     "audio_base64": "UklGRiQAAABXQVZFZm10...",
-    "timestamp": true
+    "timestamps": true
   }
 }
 ```
+
+> **Note:** The API accepts either `timestamps` or `timestamp` as the key.
 
 ### Response Format
 

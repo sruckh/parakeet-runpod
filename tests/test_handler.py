@@ -143,6 +143,20 @@ class TestValidateTimestampFlag:
 
         assert result is True
 
+    def test_timestamps_plural(self):
+        """Test timestamps flag (plural)."""
+        data = {"timestamps": True}
+        result = validate_timestamp_flag(data)
+
+        assert result is True
+
+    def test_timestamp_singular_priority(self):
+        """Test timestamp singular takes priority over plural."""
+        data = {"timestamp": True, "timestamps": False}
+        result = validate_timestamp_flag(data)
+
+        assert result is True
+
     def test_timestamp_false(self):
         """Test timestamp flag set to False."""
         data = {"timestamp": False}

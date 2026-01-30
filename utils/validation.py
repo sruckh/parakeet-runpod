@@ -242,10 +242,12 @@ def validate_timestamp_flag(data: dict[str, Any]) -> bool:
     Raises:
         TypeError: If timestamp value is not a boolean or boolean-like string
     """
-    if "timestamp" not in data:
+    if "timestamp" in data:
+        timestamp_value = data["timestamp"]
+    elif "timestamps" in data:
+        timestamp_value = data["timestamps"]
+    else:
         return config.DEFAULT_INCLUDE_TIMESTAMPS
-
-    timestamp_value = data["timestamp"]
 
     # Handle boolean
     if isinstance(timestamp_value, bool):
