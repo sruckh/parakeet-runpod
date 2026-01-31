@@ -356,21 +356,14 @@ def install_huggingface_hub() -> bool:
 
 
 def install_other_dependencies() -> bool:
-    """Install additional dependencies."""
-    log_info("Installing additional dependencies...")
+    """Install additional dependencies for audio processing and S3."""
+    log_info("Installing ffmpeg-python and boto3...")
 
-    dependencies = [
-        "ffmpeg-python>=0.2.0",
-        "boto3>=1.34.0",
-        "requests>=2.31.0",  # Required for S3 pre-signed URL downloads
-        "cuda-python>=12.3",  # Required for NeMo CUDA graphs support
-    ]
-
-    cmd = [get_venv_pip(), "install", *dependencies]
+    cmd = [get_venv_pip(), "install", "ffmpeg-python", "boto3"]
 
     return run_command(
         cmd,
-        description="Install ffmpeg-python, boto3, requests, and cuda-python",
+        description="Install ffmpeg-python and boto3",
         env={"PIP_NO_CACHE_DIR": "1"}
     )
 
@@ -445,9 +438,7 @@ def install_all() -> bool:
         ("Installing PyTorch 2.8.0 with CUDA 12.8", install_pytorch),
         ("Installing Flash Attention 2.8.1", install_flash_attention),
         ("Installing NeMo toolkit", install_nemo),
-        ("Installing Hugging Face Hub", install_huggingface_hub),
-        ("Installing additional dependencies", install_other_dependencies),
-        # Model download handled by RunPod's caching system
+        ("Installing ffmpeg-python and boto3", install_other_dependencies),
         ("Marking installation complete", mark_installation_complete),
     ]
 
@@ -472,9 +463,7 @@ def install_all() -> bool:
     log_success("Bootstrap Installation Complete!")
     log_info("=" * 60)
 
-    # Print summary
     log_info(f"Virtual environment: {config.VENV_DIR}")
-    log_info(f"Model: {config.MODEL_NAME} (cached by RunPod)")
 
     return True
 
