@@ -286,7 +286,7 @@ def get_venv_pip() -> str:
 
 def get_venv_site_packages() -> str:
     """Get path to site-packages directory in venv."""
-    return str(Path(config.VENV_DIR) / "lib" / "python3.11" / "site-packages")
+    return str(Path(config.VENV_DIR) / "lib" / "python3.12" / "site-packages")
 
 
 def get_venvHF() -> str:
