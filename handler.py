@@ -215,6 +215,14 @@ def transcribe_audio(
         logger.warning(f"Could not check audio duration: {e}")
 
     try:
+        # Ensure CUDA graphs are disabled before transcription
+        # This is critical when timestamps=True as it may trigger different decoding paths
+        try:
+            model.decoding.decoding.decoding_computer.disable_cuda_graphs()
+            logger.debug("CUDA graphs disabled for transcription")
+        except Exception as e:
+            logger.debug(f"Could not disable CUDA graphs: {e}")
+
         # Prepare transcription kwargs
         transcribe_kwargs = {
             "audio": [audio_path],

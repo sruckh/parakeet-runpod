@@ -6,35 +6,36 @@
 # are installed to the network-attached volume during bootstrap.
 # =============================================================================
 
-# Base image: NVIDIA CUDA with cuDNN
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+# Base image: RunPod with CUDA 12.8.1 and Ubuntu 24.04
+FROM runpod/base:1.0.3-cuda1281-ubuntu2404
 
 # Metadata
 LABEL maintainer="Parakeet Serverless Team"
 LABEL description="Parakeet TDT Speech-to-Text RunPod Serverless"
-LABEL version="1.0.0"
+LABEL version="1.1.0"
 
 # Set environment variables for non-interactive installation and Python
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PIP_BREAK_SYSTEM_PACKAGES=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 # Set working directory
 WORKDIR /app
 
 # ---------------------------------------------------------------------------
-# Install Python 3.11 and Essential System Packages
+# Install Python 3.12 and Essential System Packages
 # ---------------------------------------------------------------------------
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3.11-dev \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
     python3-pip \
     git \
     ca-certificates \
@@ -46,8 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
-    && ln -sf /usr/bin/python3.11 /usr/local/bin/python \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
+    && ln -sf /usr/bin/python3.12 /usr/local/bin/python \
     && ln -sf /usr/bin/pip3 /usr/local/bin/pip
 
 # Verify Python installation

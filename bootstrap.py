@@ -269,7 +269,7 @@ def create_directories() -> bool:
 
 def create_virtual_environment() -> bool:
     """Create Python virtual environment."""
-    log_info("Creating Python 3.11 virtual environment...")
+    log_info("Creating Python 3.12 virtual environment...")
 
     cmd = [sys.executable, "-m", "venv", config.VENV_DIR]
     return run_command(cmd, description="Create virtual environment")
@@ -295,16 +295,50 @@ def get_venvHF() -> str:
     return str(Path(config.VENV_DIR) / "bin" / "hf")
 
 
+
+def install_pytorch() -> bool:
+    """Install PyTorch 2.8.0 with CUDA 12.8 support."""
+    log_info("Installing PyTorch 2.8.0 with CUDA 12.8...")
+
+    cmd = [
+        get_venv_pip(), "install",
+        "torch==2.8.0", "torchvision==0.23.0", "torchaudio==2.8.0",
+        "--index-url", "https://download.pytorch.org/whl/cu128"
+    ]
+
+    return run_command(
+        cmd,
+        description="Install PyTorch with CUDA 12.8",
+        env={"PIP_NO_CACHE_DIR": "1"}
+    )
+
+
+def install_flash_attention() -> bool:
+    """Install Flash Attention 2.8.1 from pre-built wheel."""
+    log_info("Installing Flash Attention 2.8.1...")
+
+    wheel_url = (
+        "https://github.com/Dao-AILab/flash-attention/releases/download/"
+        "v2.8.1/flash_attn-2.8.1+cu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl"
+    )
+
+    cmd = [get_venv_pip(), "install", wheel_url]
+
+    return run_command(
+        cmd,
+        description="Install Flash Attention from wheel",
+        env={"PIP_NO_CACHE_DIR": "1"}
+    )
+
 def install_nemo() -> bool:
-    """Install NVIDIA NeMo toolkit with ASR support (handles PyTorch dependencies)."""
+    """Install NVIDIA NeMo toolkit with ASR support."""
     log_info("Installing NVIDIA NeMo toolkit with ASR support...")
-    log_info("NeMo will automatically install PyTorch and other ML dependencies")
 
     cmd = [get_venv_pip(), "install", "-U", "nemo-toolkit[asr]"]
 
     return run_command(
         cmd,
-        description="Install NeMo toolkit with auto dependencies",
+        description="Install NeMo toolkit",
         env={"PIP_NO_CACHE_DIR": "1"}
     )
 
@@ -409,8 +443,9 @@ def install_all() -> bool:
     steps: list[tuple[str, Callable[[], bool]]] = [
         ("Creating directories", create_directories),
         ("Creating virtual environment", create_virtual_environment),
-        # Let NeMo handle PyTorch and Flash Attention installation
-        ("Installing NeMo toolkit (with PyTorch)", install_nemo),
+        ("Installing PyTorch 2.8.0 with CUDA 12.8", install_pytorch),
+        ("Installing Flash Attention 2.8.1", install_flash_attention),
+        ("Installing NeMo toolkit", install_nemo),
         ("Installing Hugging Face Hub", install_huggingface_hub),
         ("Installing additional dependencies", install_other_dependencies),
         ("Downloading Parakeet model", download_model),
