@@ -213,9 +213,20 @@ def transcribe_audio(
 
     try:
         # Disable CUDA graphs to prevent Error 35
-        # Required for CUDA 12.8 / PyTorch 2.8 / timestamps compatibility
-        model.cfg.decoding.cuda_graph = False
-        logger.debug("CUDA graphs disabled via model.cfg.decoding.cuda_graph")
+        # Use RNNTDecodingConfig with use_cuda_graph_decoder=False
+        try:
+            from nemo.collections.asr.parts.submodules.rnnt_decoding import RNNTDecodingConfig
+            decoding_cfg = RNNTDecodingConfig(
+                strategy="greedy_batch",
+                model_type="tdt",
+                fused_batch_size=-1
+            )
+            decoding_cfg.greedy.loop_labels = True
+            decoding_cfg.greedy.use_cuda_graph_decoder = False
+            model.change_decoding_strategy(decoding_cfg)
+            logger.info("Decoding strategy configured with CUDA graphs disabled")
+        except Exception as e:
+            logger.warning(f"Could not configure decoding strategy: {e}")
 
         # Prepare transcription kwargs
         transcribe_kwargs = {
