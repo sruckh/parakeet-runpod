@@ -253,8 +253,7 @@ def create_directories() -> bool:
 
     dirs = [
         config.PARAKEET_DIR,
-        config.HF_HOME_DIR,
-        config.HF_HUB_CACHE,
+        # HF cache directories removed - RunPod manages model caching
     ]
 
     try:
@@ -448,7 +447,7 @@ def install_all() -> bool:
         ("Installing NeMo toolkit", install_nemo),
         ("Installing Hugging Face Hub", install_huggingface_hub),
         ("Installing additional dependencies", install_other_dependencies),
-        ("Downloading Parakeet model", download_model),
+        # Model download handled by RunPod's caching system
         ("Marking installation complete", mark_installation_complete),
     ]
 
@@ -475,8 +474,7 @@ def install_all() -> bool:
 
     # Print summary
     log_info(f"Virtual environment: {config.VENV_DIR}")
-    log_info(f"HuggingFace cache: {config.HF_HUB_CACHE}")
-    log_info(f"Model: {config.MODEL_NAME}")
+    log_info(f"Model: {config.MODEL_NAME} (cached by RunPod)")
 
     return True
 

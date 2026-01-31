@@ -13,8 +13,7 @@ including paths, versions, and model settings.
 VOLUME_MOUNT = "/runpod-volume"
 PARAKEET_DIR = f"{VOLUME_MOUNT}/Parakeet"
 VENV_DIR = f"{PARAKEET_DIR}/venv"
-HF_HOME_DIR = f"{PARAKEET_DIR}/hf_home"
-HF_HUB_CACHE = f"{PARAKEET_DIR}/hf_hub/cache"
+# HF cache paths removed - RunPod manages model caching via serverless config
 
 # Installation marker file - created when bootstrap completes successfully
 INSTALLATION_MARKER = f"{PARAKEET_DIR}/.installation_complete"

@@ -84,15 +84,15 @@ def setup_python_path():
 
 def setup_huggingface_cache():
     """
-    Set Hugging Face environment variables for model cache location.
+    Log Hugging Face cache location.
 
-    Ensures models are downloaded to and read from the volume.
+    RunPod manages the HF cache via serverless configuration.
+    We no longer override these paths.
     """
-    os.environ["HF_HOME"] = config.HF_HOME_DIR
-    os.environ["HF_HUB_CACHE"] = config.HF_HUB_CACHE
-    os.environ["HF_DATASETS_CACHE"] = f"{config.HF_HOME_DIR}/datasets"
-    logger.info(f"HF_HOME set to: {config.HF_HOME_DIR}")
-    logger.info(f"HF_HUB_CACHE set to: {config.HF_HUB_CACHE}")
+    hf_home = os.environ.get("HF_HOME", "not set")
+    hf_hub_cache = os.environ.get("HF_HUB_CACHE", "not set")
+    logger.info(f"HF_HOME: {hf_home}")
+    logger.info(f"HF_HUB_CACHE: {hf_hub_cache}")
 
 
 # =============================================================================
