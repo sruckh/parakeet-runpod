@@ -481,10 +481,27 @@ def bootstrap_if_needed() -> bool:
 
     if is_installed():
         log_info("Software already installed. Skipping bootstrap.")
+        # One-time hack: ensure ffmpeg-python and boto3 are installed
+        # even if marker exists (for upgrades where these were missing)
+        _ensure_ffmpeg_boto3()
         return True
 
     log_info("First run detected. Starting bootstrap installation...")
     return install_all()
+
+
+def _ensure_ffmpeg_boto3() -> None:
+    """Ensure ffmpeg-python and boto3 are installed (one-time migration fix)."""
+    try:
+        # Quick check if ffmpeg is importable from venv
+        site_packages = get_venv_site_packages()
+        ffmpeg_path = Path(site_packages) / "ffmpeg"
+        if not ffmpeg_path.exists():
+            log_info("Installing missing ffmpeg-python and boto3...")
+            cmd = [get_venv_pip(), "install", "ffmpeg-python", "boto3"]
+            run_command(cmd, description="Install ffmpeg-python and boto3")
+    except Exception as e:
+        log_error(f"Failed to ensure ffmpeg-python: {e}")
 
 
 # =============================================================================
