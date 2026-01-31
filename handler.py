@@ -197,13 +197,10 @@ def transcribe_audio(
         logger.info(f"Transcribing audio: {audio_path}")
 
     # Check if we need to adjust attention model for long audio
-    use_long_audio_mode = False
     try:
         duration = get_audio_duration(audio_path)
         if duration > config.MAX_FULL_ATTENTION_DURATION_SEC:
             logger.info(f"Long audio detected ({duration:.2f}s), using local attention")
-            use_long_audio_mode = True
-            # Adjust attention model for long audio
             model.change_attention_model(
                 self_attention_model="rel_pos_local_attn",
                 att_context_size=[
@@ -215,13 +212,10 @@ def transcribe_audio(
         logger.warning(f"Could not check audio duration: {e}")
 
     try:
-        # Ensure CUDA graphs are disabled before transcription
-        # This is critical when timestamps=True as it may trigger different decoding paths
-        try:
-            model.decoding.decoding.decoding_computer.disable_cuda_graphs()
-            logger.debug("CUDA graphs disabled for transcription")
-        except Exception as e:
-            logger.debug(f"Could not disable CUDA graphs: {e}")
+        # Disable CUDA graphs to prevent Error 35
+        # Required for CUDA 12.8 / PyTorch 2.8 / timestamps compatibility
+        model.cfg.decoding.cuda_graph = False
+        logger.debug("CUDA graphs disabled via model.cfg.decoding.cuda_graph")
 
         # Prepare transcription kwargs
         transcribe_kwargs = {
